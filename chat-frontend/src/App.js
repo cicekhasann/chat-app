@@ -3,7 +3,7 @@ import { Container, Row, Col, Form, Button, ListGroup, Alert } from 'react-boots
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
-const socket = new WebSocket('ws://localhost:8080/ws');
+const socket = new WebSocket('ws://localhost:8080');
 
 function App() {
   const [username, setUsername] = useState('');
@@ -22,14 +22,13 @@ function App() {
     socket.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data);
-        setMessages((prevMessages) => [...prevMessages, msg]);
 
-        // Oda üye listesi güncelleme
-        if (msg.message.includes('joined the room') || msg.message.includes('left the room')) {
-          const updatedUsers = usersInRoom.includes(msg.username) ?
-            usersInRoom.filter(user => user !== msg.username) :
-            [...usersInRoom, msg.username];
-          setUsersInRoom(updatedUsers);
+        if (msg.type === 'usersList') {
+          setUsersInRoom(msg.users || []);
+        } else if (msg.type === 'message' && msg.username && msg.message) {
+          setMessages((prevMessages) => [...prevMessages, msg]);
+        } else {
+          console.warn('Beklenmeyen mesaj türü:', msg);
         }
       } catch (error) {
         console.error('Mesajı çözümleme hatası:', error);
@@ -44,7 +43,7 @@ function App() {
       socket.onclose = null;
       socket.onmessage = null;
     };
-  }, [usersInRoom]);
+  }, []);
 
   const joinRoom = () => {
     if (username && room) {
@@ -61,12 +60,22 @@ function App() {
     if (message) {
       const msg = { username, room, message };
       socket.send(JSON.stringify(msg));
-      //! TODO
-      //setMessages((prevMessages) => [...prevMessages, msg]);
       setMessage('');
       setError('');
     } else {
       setError('Mesaj boş olamaz!');
+    }
+  };
+
+  const leaveRoom = () => {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify({ username, room, message: `${username} left the room` }));
+      socket.close();
+      setIsLoggedIn(false);
+      setRoom('');
+      setUsername('');
+      setMessages([]);
+      setUsersInRoom([]);
     }
   };
 
@@ -116,7 +125,6 @@ function App() {
             </div>
             <div className="mb-4">
               <ListGroup>
-                {messages.map((mesajlar)=> console.log(mesajlar))}
                 {messages.map((msg, index) => (
                   <ListGroup.Item key={index}>
                     <strong>{msg.username}:</strong> {msg.message}
@@ -135,6 +143,7 @@ function App() {
               </Form.Group>
               <Button variant="primary" className="mt-3" onClick={sendMessage}>Gönder</Button>
             </Form>
+            <Button variant="danger" className="mt-3" onClick={leaveRoom}>Odayı Terket</Button>
           </Col>
         </Row>
       )}
