@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Form, Button, ListGroup, Alert } from 'react-bootstrap';
+import { Container, Row, Col, Form, Button, ListGroup, Alert, Card } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
@@ -65,6 +65,7 @@ function App() {
     } else {
       setError('Mesaj boş olamaz!');
     }
+    
   };
 
   const leaveRoom = () => {
@@ -113,20 +114,25 @@ function App() {
         </Row>
       ) : (
         <Row>
-          <Col md={6} className="mx-auto">
-            <div className="text-center mb-4">
-              <h2>Oda: {room}</h2>
-              <h3>Mevcut Kullanıcılar:</h3>
-              <ListGroup>
+          <Col md={4} className="mb-4">
+            <Card>
+              <Card.Header>
+                <h3>Mevcut Kullanıcılar</h3>
+                <h5>Oda: {room}</h5>
+
+              </Card.Header>
+              <ListGroup variant="flush">
                 {usersInRoom.map((user, index) => (
                   <ListGroup.Item key={index}>{user}</ListGroup.Item>
                 ))}
               </ListGroup>
-            </div>
-            <div className="mb-4">
+            </Card>
+          </Col>
+          <Col md={8}>
+            <div className="mb-4" style={{ height: '60vh', overflowY: 'scroll' }}>
               <ListGroup>
                 {messages.map((msg, index) => (
-                  <ListGroup.Item key={index}>
+                  <ListGroup.Item key={index} className={msg.username === username ? 'text-end' : 'text-start'}>
                     <strong>{msg.username}:</strong> {msg.message}
                   </ListGroup.Item>
                 ))}
@@ -150,5 +156,6 @@ function App() {
     </Container>
   );
 }
+
 
 export default App;
