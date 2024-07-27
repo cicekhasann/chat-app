@@ -1,8 +1,9 @@
 import React from 'react';
 import { Card, ListGroup } from 'react-bootstrap';
+import '../App.css'; // Stil dosyasını ekleyin
 
 const UserList = ({ room, usersInRoom }) => (
-  <Card>
+  <Card className="user-list">
     <Card.Header>
       <h3>Mevcut Kullanıcılar</h3>
       <h5>Oda: {room}</h5>

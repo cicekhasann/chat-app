@@ -1,58 +1,156 @@
-.App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 body {
-  background-color: #f8f9fa;
+  background-color: #E0E0E0; /* Genel arka plan rengi */
 }
 
 h1, h2, h3 {
-  color: #343a40;
+  color: #212121; /* Başlıklar için metin rengi */
 }
 
-button {
-  margin-top: 10px;
+.center-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5); /* Yarı saydam arka plan */
 }
 
-.text-end {
+.join-room {
+  max-width: 400px;
+  width: 100%;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  background-color: rgba(255, 255, 255, 0.8); /* Yarı saydam arka plan */
+}
+
+.join-room h2 {
+  text-align: center;
+}
+
+.join-room input, .join-room button {
+  display: block;
+  width: calc(100% - 20px);
+  margin: 10px auto;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.chat-room-container {
+  background-color: rgba(0, 0, 0, 0.8); /* Yarı saydam arka plan */
+  border-radius: 10px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Elemanlar arası boşluk */
+}
+
+.chat-messages {
+  height: 60vh;
+  overflow-y: scroll;
+  background-color: rgba(240, 240, 240, 0.7); /* Mesaj arka planı için hafif gri yarı saydam */
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.message-item {
+  border-radius: 10px;
+  margin-bottom: 10px;
+  padding: 10px;
+  max-width: 75%;
+  word-wrap: break-word;
+}
+
+.message-item.sent {
+  background-color: #BBDEFB; /* Gönderilen mesaj rengi */
+  align-self: flex-end;
   text-align: right;
 }
 
-.text-start {
-  text-align: left;
+.message-item.received {
+  background-color: #FFFFFF; /* Alınan mesaj rengi */
+  border: 1px solid #ddd;
+  align-self: flex-start;
+}
+
+.message-form {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.message-form .form-control {
+  flex: 1;
+  border-radius: 20px;
+  padding: 10px;
+  margin-right: 10px;
+}
+
+.message-form .btn {
+  border-radius: 20px;
+  padding: 10px 20px;
+}
+
+.chat-window {
+  height: 60vh;
+  overflow-y: scroll;
+  background-color: rgba(240, 240, 240, 0.7); /* Mesaj penceresi için yarı saydam arka plan */
+  padding: 15px;
+  border-radius: 10px;
+}
+
+.message-item {
+  max-width: 75%;
+  margin: 5px 0;
+  padding: 10px;
+  border-radius: 15px;
+  word-wrap: break-word;
+}
+
+.message-item.sent {
+  background-color: #BBDEFB; /* Gönderilen mesaj rengi */
+  align-self: flex-end;
+  text-align: right;
+}
+
+.message-item.received {
+  background-color: #FFFFFF; /* Alınan mesaj rengi */
+  border: 1px solid #ddd;
+  align-self: flex-start;
+}
+
+.message-input {
+  width: calc(100% - 20px);
+  border-radius: 20px;
+  padding: 10px;
+  margin-right: 10px;
+}
+
+.chat-input {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+}
+
+.send-button {
+  width: 100%;
+  background-color: #2196F3; /* Primary Color */
+  color: #FFFFFF; /* Button Text Color */
+  border-radius: 20px;
+  padding: 10px 20px;
+}
+
+.leave-button {
+  background-color: #E91E63; /* Secondary Color */
+  color: #FFFFFF; /* Button Text Color */
+  border-radius: 20px;
+  padding: 10px 20px;
+  margin-top: 10px;
+}
+
+.user-list {
+  background-color: rgba(255, 255, 255, 0.9); /* Hafif yarı saydam arka plan */
+  border-radius: 10px;
 }
