@@ -1,5 +1,7 @@
+// src/App.js
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Form, Button, ListGroup, Alert, Card } from 'react-bootstrap';
+import JoinRoom from './components/JoinRoom';
+import ChatRoom from './components/ChatRoom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
@@ -65,7 +67,6 @@ function App() {
     } else {
       setError('Mesaj boş olamaz!');
     }
-    
   };
 
   const leaveRoom = () => {
@@ -81,81 +82,30 @@ function App() {
   };
 
   return (
-    <Container className="mt-5">
+    <div className="mt-5">
       {!isLoggedIn ? (
-        <Row className="justify-content-center">
-          <Col md={6}>
-            <div className="text-center mb-4">
-              <h1>Chat Uygulaması</h1>
-            </div>
-            {error && <Alert variant="danger">{error}</Alert>}
-            <Form>
-              <Form.Group controlId="formUsername">
-                <Form.Label>Kullanıcı Adı</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Kullanıcı Adı"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                />
-              </Form.Group>
-              <Form.Group controlId="formRoom">
-                <Form.Label>Oda Numarası</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Oda Numarası"
-                  value={room}
-                  onChange={(e) => setRoom(e.target.value)}
-                />
-              </Form.Group>
-              <Button variant="primary" className="mt-3" onClick={joinRoom}>Giriş Yap</Button>
-            </Form>
-          </Col>
-        </Row>
+        <JoinRoom
+          joinRoom={joinRoom}
+          username={username}
+          setUsername={setUsername}
+          room={room}
+          setRoom={setRoom}
+          error={error}
+        />
       ) : (
-        <Row>
-          <Col md={4} className="mb-4">
-            <Card>
-              <Card.Header>
-                <h3>Mevcut Kullanıcılar</h3>
-                <h5>Oda: {room}</h5>
-
-              </Card.Header>
-              <ListGroup variant="flush">
-                {usersInRoom.map((user, index) => (
-                  <ListGroup.Item key={index}>{user}</ListGroup.Item>
-                ))}
-              </ListGroup>
-            </Card>
-          </Col>
-          <Col md={8}>
-            <div className="mb-4" style={{ height: '60vh', overflowY: 'scroll' }}>
-              <ListGroup>
-                {messages.map((msg, index) => (
-                  <ListGroup.Item key={index} className={msg.username === username ? 'text-end' : 'text-start'}>
-                    <strong>{msg.username}:</strong> {msg.message}
-                  </ListGroup.Item>
-                ))}
-              </ListGroup>
-            </div>
-            <Form>
-              <Form.Group controlId="formMessage">
-                <Form.Control
-                  type="text"
-                  placeholder="Mesajınızı yazın"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                />
-              </Form.Group>
-              <Button variant="primary" className="mt-3" onClick={sendMessage}>Gönder</Button>
-            </Form>
-            <Button variant="danger" className="mt-3" onClick={leaveRoom}>Odayı Terket</Button>
-          </Col>
-        </Row>
+        <ChatRoom
+          messages={messages}
+          username={username}
+          usersInRoom={usersInRoom}
+          room={room}
+          message={message}
+          setMessage={setMessage}
+          sendMessage={sendMessage}
+          leaveRoom={leaveRoom}
+        />
       )}
-    </Container>
+    </div>
   );
 }
-
 
 export default App;
