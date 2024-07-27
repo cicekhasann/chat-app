@@ -1,10 +1,10 @@
-// src/components/ChatRoom.js
 import React from 'react';
 import { Container, Row, Col, ListGroup, Form, Button, Card } from 'react-bootstrap';
+import '../App.css'; // Özel stil dosyası
 
 const ChatRoom = ({ messages, username, usersInRoom, room, message, setMessage, sendMessage, leaveRoom }) => {
   return (
-    <Container className="mt-5">
+    <Container className="chat-room-container mt-5">
       <Row>
         <Col md={4} className="mb-4">
           <Card>
@@ -20,16 +20,19 @@ const ChatRoom = ({ messages, username, usersInRoom, room, message, setMessage, 
           </Card>
         </Col>
         <Col md={8}>
-          <div className="mb-4" style={{ height: '60vh', overflowY: 'scroll' }}>
+          <div className="chat-messages mb-4">
             <ListGroup>
               {messages.map((msg, index) => (
-                <ListGroup.Item key={index} className={msg.username === username ? 'text-end' : 'text-start'}>
+                <ListGroup.Item
+                  key={index}
+                  className={`message-item ${msg.username === username ? 'sent' : 'received'}`}
+                >
                   <strong>{msg.username}:</strong> {msg.message}
                 </ListGroup.Item>
               ))}
             </ListGroup>
           </div>
-          <Form>
+          <Form className="message-form">
             <Form.Group controlId="formMessage">
               <Form.Control
                 type="text"
