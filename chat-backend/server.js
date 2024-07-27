@@ -31,19 +31,18 @@ wss.on('connection', (ws) => {
   ws.on('message', (message) => {
     try {
       const msg = JSON.parse(message);
-      const { username, room, message: text } = msg;
+      const { username, room, message: text, type } = msg;
 
-      if (username && room) {
-        ws.room = room;
-        ws.username = username;
-        userName = username;
-        userRoom = room;
-
+      if (type === 'join') {
         // Oda kullanıcı listesini güncelle
         if (!roomUsers[room]) {
           roomUsers[room] = new Set();
         }
         roomUsers[room].add(username);
+        ws.room = room;
+        ws.username = username;
+        userName = username;
+        userRoom = room;
 
         // Log dosyasının yolu
         const logDir = path.join(__dirname, 'tmp');
@@ -53,7 +52,7 @@ wss.on('connection', (ws) => {
         }
         const logPath = path.join(logDir, `${room}.json`);
 
-        // Mesajı log dosyasına yazma
+        // Log girişini ekleme
         const logEntry = {
           username,
           message: text,
@@ -65,10 +64,9 @@ wss.on('connection', (ws) => {
         }
         roomLogs[room].push(logEntry);
 
-        // Mesajı geçici log dosyasına yazma
+        // Geçici log dosyasına yazma
         fs.appendFile(logPath, JSON.stringify(logEntry) + '\n', (err) => {
           if (err) console.error('Log dosyasına yazma hatası:', err);
-          else console.log(`Log dosyasına yazıldı: ${logPath}`);
         });
 
         // Odaya katılan kullanıcıya mevcut kullanıcı listesini gönderme
@@ -82,7 +80,57 @@ wss.on('connection', (ws) => {
             client.send(JSON.stringify({ type: 'message', username, message: text }));
           }
         });
+      } else if (type === 'message') {
+        // Odaya gönderilen mesajı diğer kullanıcılara iletme
+        wss.clients.forEach((client) => {
+          if (client.readyState === WebSocket.OPEN && client.room === room) {
+            client.send(JSON.stringify(msg));
+          }
+        });
+      } else if (type === 'leave') {
+        if (roomUsers[userRoom]) {
+          roomUsers[userRoom].delete(userName);
+          if (roomUsers[userRoom].size === 0) {
+            console.log(`Oda kapatılıyor: ${userRoom}`);
+            delete roomUsers[userRoom];
 
+            // Oda kapandı, logları veritabanına aktarma
+            if (roomLogs[userRoom]) {
+              const logEntries = roomLogs[userRoom];
+              logEntries.forEach((logEntry) => {
+                db.run(
+                  'INSERT INTO messages (username, room, message, sent_at) VALUES (?, ?, ?, ?)',
+                  [logEntry.username, userRoom, logEntry.message, logEntry.sent_at],
+                  (err) => {
+                    if (err) {
+                      console.error('Veritabanına ekleme hatası:', err);
+                    } else {
+                      console.log('Veritabanına mesaj eklendi:', logEntry);
+                    }
+                  }
+                );
+              });
+
+              // Logları temizle ve log dosyasını sil
+              delete roomLogs[userRoom];
+              const logPath = path.join(__dirname, 'tmp', `${userRoom}.json`);
+              if (fs.existsSync(logPath)) {
+                fs.unlink(logPath, (err) => {
+                  if (err) console.error('Log dosyasını silme hatası:', err);
+                });
+              }
+            }
+          }
+        }
+
+        // Kullanıcının odadan ayrıldığını bildirme
+        const leaveMessage = { type: 'message', username: userName, message: `${userName} left the room` };
+        wss.clients.forEach((client) => {
+          if (client.readyState === WebSocket.OPEN && client.room === userRoom) {
+            client.send(JSON.stringify(leaveMessage));
+            client.send(JSON.stringify({ type: 'usersList', users: Array.from(roomUsers[userRoom] || []) }));
+          }
+        });
       }
     } catch (error) {
       console.error('Mesaj işleme hatası:', error);
@@ -121,7 +169,6 @@ wss.on('connection', (ws) => {
             if (fs.existsSync(logPath)) {
               fs.unlink(logPath, (err) => {
                 if (err) console.error('Log dosyasını silme hatası:', err);
-                else console.log(`Log dosyası silindi: ${logPath}`);
               });
             }
           }

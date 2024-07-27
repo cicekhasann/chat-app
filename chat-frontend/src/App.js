@@ -1,11 +1,8 @@
-// src/App.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import JoinRoom from './components/JoinRoom';
 import ChatRoom from './components/ChatRoom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
-
-const socket = new WebSocket('ws://localhost:8080');
 
 function App() {
   const [username, setUsername] = useState('');
@@ -16,7 +13,15 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [error, setError] = useState('');
 
+  // useRef kullanarak socket'e referans oluşturuyoruz
+  const socketRef = useRef(null);
+
   useEffect(() => {
+    // WebSocket bağlantısını başlatıyoruz
+    socketRef.current = new WebSocket('ws://localhost:8080');
+
+    const socket = socketRef.current;
+
     socket.onopen = () => {
       console.log('WebSocket bağlantısı kuruldu.');
     };
@@ -42,17 +47,24 @@ function App() {
     };
 
     return () => {
-      socket.onclose = null;
-      socket.onmessage = null;
+      if (socket) {
+        socket.close();
+      }
     };
   }, []);
 
   const joinRoom = () => {
     if (username && room) {
-      const msg = JSON.stringify({ username, room, message: `${username} joined the room` });
-      socket.send(msg);
-      setIsLoggedIn(true);
-      setError('');
+      const socket = socketRef.current;
+
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        const msg = JSON.stringify({ type: 'join', username, room, message: `${username} joined the room` });
+        socket.send(msg);
+        setIsLoggedIn(true);
+        setError('');
+      } else {
+        setError('WebSocket bağlantısı kapalı.');
+      }
     } else {
       setError('Kullanıcı adı ve oda numarası gerekli!');
     }
@@ -60,19 +72,27 @@ function App() {
 
   const sendMessage = () => {
     if (message) {
-      const msg = { username, room, message };
-      socket.send(JSON.stringify(msg));
-      setMessage('');
-      setError('');
+      const socket = socketRef.current;
+
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        const msg = JSON.stringify({ type: 'message', username, room, message });
+        socket.send(msg);
+        setMessage('');
+        setError('');
+      } else {
+        setError('WebSocket bağlantısı kapalı.');
+      }
     } else {
       setError('Mesaj boş olamaz!');
     }
   };
 
   const leaveRoom = () => {
+    const socket = socketRef.current;
+
     if (socket && socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify({ username, room, message: `${username} left the room` }));
-      socket.close();
+      const msg = JSON.stringify({ type: 'leave', username, room, message: `${username} left the room` });
+      socket.send(msg);
       setIsLoggedIn(false);
       setRoom('');
       setUsername('');
