@@ -1,0 +1,20 @@
+# Node.js bağımlılıkları
+node_modules/
+
+# Derleme dosyaları
+build/
+dist/
+
+# Geçici dosyalar
+.DS_Store
+*.log
+*.tmp
+
+# IDE ve editör ayar dosyaları
+.vscode/
+.idea/
+*.swp
+
+# Çevre değişkenleri dosyası
+.env
+
