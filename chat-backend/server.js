@@ -39,7 +39,7 @@ wss.on('connection', (ws) => {
           roomUsers[room] = new Set();
         }
         if (roomUsers[room].has(username)){
-          ws.send(JSON.stringify({type: 'error', message: 'Aynı kullanıcı mevcut odadad!!'}));
+          ws.send(JSON.stringify({type: 'error', message: 'Aynı kullanıcı mevcut odada!!'}));
           ws.close();
           return;
         }else {
@@ -82,7 +82,7 @@ wss.on('connection', (ws) => {
         wss.clients.forEach((client) => {
           if (client.readyState === WebSocket.OPEN && client.room === room) {
             client.send(JSON.stringify({ type: 'usersList', users: usersInRoom }));
-            client.send(JSON.stringify({ type: 'message', username, message: text }));
+            client.send(JSON.stringify({ type: 'message', username: 'admin', message: `Maymun ${username} aramıza katıldı` }));
           }
         });
        }
@@ -130,7 +130,7 @@ wss.on('connection', (ws) => {
         }
 
         // Kullanıcının odadan ayrıldığını bildirme
-        const leaveMessage = { type: 'message', username: userName, message: `${userName} left the room` };
+        const leaveMessage = { type: 'message', username: 'admin', message: `Maymun ${userName} aramızdan ayrıldı.` };
         wss.clients.forEach((client) => {
           if (client.readyState === WebSocket.OPEN && client.room === userRoom) {
             client.send(JSON.stringify(leaveMessage));
@@ -182,7 +182,7 @@ wss.on('connection', (ws) => {
       }
 
       // Kullanıcının odadan ayrıldığını bildirme
-      const leaveMessage = { type: 'message', username: userName, message: `${userName} left the room` };
+      const leaveMessage = { type: 'message', username: 'admin', message: `${userName} left the room` };
       wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN && client.room === userRoom) {
           client.send(JSON.stringify(leaveMessage));

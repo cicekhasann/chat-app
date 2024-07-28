@@ -20,7 +20,7 @@ const ChatInput = ({ sendMessage, leaveRoom }) => {
             <Form.Group controlId="formMessage">
               <Form.Control
                 type="text"
-                placeholder="Mesajınızı yazın"
+                placeholder="Mesaj Yazmak"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 className="message-input"
@@ -28,11 +28,11 @@ const ChatInput = ({ sendMessage, leaveRoom }) => {
             </Form.Group>
           </Col>
           <Col xs={3} className="text-end">
-            <Button variant="primary" onClick={handleSendMessage} className="send-button">Gönder</Button>
+            <Button variant="primary" onClick={handleSendMessage} className="send-button">Göndermek</Button>
           </Col>
         </Row>
       </Form>
-      <Button variant="danger" className="mt-3 leave-button" onClick={leaveRoom}>Odayı Terket</Button>
+      <Button variant="danger" className="mt-3 leave-button" onClick={leaveRoom}>Odayı Terketmek</Button>
     </div>
   );
 };

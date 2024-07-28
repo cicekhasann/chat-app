@@ -3,20 +3,20 @@ import { Form, Button, Alert } from 'react-bootstrap';
 
 const LoginForm = ({ username, setUsername, room, setRoom, joinRoom, error }) => (
   <div className="text-center">
-    <h1>Chat Uygulaması</h1>
+    <h1>Maymunlar Güçlü Birlikte</h1>
     {error && <Alert variant="danger">{error}</Alert>}
     <Form>
       <Form.Group controlId="formUsername">
-        <Form.Label>Kullanıcı Adı</Form.Label>
+        <Form.Label>Maymun Ad</Form.Label>
         <Form.Control
           type="text"
-          placeholder="Kullanıcı Adı"
+          placeholder="Kullanıcı Ad"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
         />
       </Form.Group>
       <Form.Group controlId="formRoom">
-        <Form.Label>Oda Numarası</Form.Label>
+        <Form.Label>Oda Numara</Form.Label>
         <Form.Control
           type="text"
           placeholder="Oda Numarası"
@@ -24,7 +24,7 @@ const LoginForm = ({ username, setUsername, room, setRoom, joinRoom, error }) =>
           onChange={(e) => setRoom(e.target.value)}
         />
       </Form.Group>
-      <Button variant="primary" className="mt-3" onClick={joinRoom}>Giriş Yap</Button>
+      <Button variant="primary" className="mt-3" onClick={joinRoom}>Giriş Yapmak</Button>
     </Form>
   </div>
 );
