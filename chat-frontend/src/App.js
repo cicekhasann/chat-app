@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Form, Button, ListGroup, Alert } from 'react-bootstrap';
+import React, { useState, useEffect, useRef } from 'react';
+import JoinRoom from './components/JoinRoom';
+import ChatRoom from './components/ChatRoom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
-
-const socket = new WebSocket('ws://localhost:8080/ws');
 
 function App() {
   const [username, setUsername] = useState('');
@@ -14,7 +13,15 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [error, setError] = useState('');
 
+  // useRef kullanarak socket'e referans oluşturuyoruz
+  const socketRef = useRef(null);
+
   useEffect(() => {
+    // WebSocket bağlantısını başlatıyoruz
+    socketRef.current = new WebSocket('ws://localhost:8080');
+
+    const socket = socketRef.current;
+
     socket.onopen = () => {
       console.log('WebSocket bağlantısı kuruldu.');
     };
@@ -22,14 +29,16 @@ function App() {
     socket.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data);
-        setMessages((prevMessages) => [...prevMessages, msg]);
 
-        // Oda üye listesi güncelleme
-        if (msg.message.includes('joined the room') || msg.message.includes('left the room')) {
-          const updatedUsers = usersInRoom.includes(msg.username) ?
-            usersInRoom.filter(user => user !== msg.username) :
-            [...usersInRoom, msg.username];
-          setUsersInRoom(updatedUsers);
+        if (msg.type === 'usersList') {
+          setUsersInRoom(msg.users || []);
+        } else if (msg.type === 'message' && msg.username && msg.message) {
+          setMessages((prevMessages) => [...prevMessages, msg]);
+        } else if (msg.type === 'error') {
+          setError(msg.message);
+          setIsLoggedIn(false);
+        } else {
+          console.warn('Beklenmeyen mesaj türü:', msg);
         }
       } catch (error) {
         console.error('Mesajı çözümleme hatası:', error);
@@ -41,17 +50,24 @@ function App() {
     };
 
     return () => {
-      socket.onclose = null;
-      socket.onmessage = null;
+      if (socket) {
+        socket.close();
+      }
     };
-  }, [usersInRoom]);
+  }, []);
 
   const joinRoom = () => {
     if (username && room) {
-      const msg = JSON.stringify({ username, room, message: `${username} joined the room` });
-      socket.send(msg);
-      setIsLoggedIn(true);
-      setError('');
+      const socket = socketRef.current;
+
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        const msg = JSON.stringify({ type: 'join', username, room, message: `${username} joined the room` });
+        socket.send(msg);
+        setIsLoggedIn(true);
+        setError('');
+      } else {
+        setError('WebSocket bağlantısı kapalı.');
+      }
     } else {
       setError('Kullanıcı adı ve oda numarası gerekli!');
     }
@@ -59,86 +75,59 @@ function App() {
 
   const sendMessage = () => {
     if (message) {
-      const msg = { username, room, message };
-      socket.send(JSON.stringify(msg));
-      //! TODO
-      //setMessages((prevMessages) => [...prevMessages, msg]);
-      setMessage('');
-      setError('');
+      const socket = socketRef.current;
+
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        const msg = JSON.stringify({ type: 'message', username, room, message });
+        socket.send(msg);
+        setMessage('');
+        setError('');
+      } else {
+        setError('WebSocket bağlantısı kapalı.');
+      }
     } else {
       setError('Mesaj boş olamaz!');
     }
   };
 
+  const leaveRoom = () => {
+    const socket = socketRef.current;
+
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      const msg = JSON.stringify({ type: 'leave', username, room, message: `${username} left the room` });
+      socket.send(msg);
+      setIsLoggedIn(false);
+      setRoom('');
+      setUsername('');
+      setMessages([]);
+      setUsersInRoom([]);
+    }
+  };
+
   return (
-    <Container className="mt-5">
+    <div className="mt-5">
       {!isLoggedIn ? (
-        <Row className="justify-content-center">
-          <Col md={6}>
-            <div className="text-center mb-4">
-              <h1>Chat Uygulaması</h1>
-            </div>
-            {error && <Alert variant="danger">{error}</Alert>}
-            <Form>
-              <Form.Group controlId="formUsername">
-                <Form.Label>Kullanıcı Adı</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Kullanıcı Adı"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                />
-              </Form.Group>
-              <Form.Group controlId="formRoom">
-                <Form.Label>Oda Numarası</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Oda Numarası"
-                  value={room}
-                  onChange={(e) => setRoom(e.target.value)}
-                />
-              </Form.Group>
-              <Button variant="primary" className="mt-3" onClick={joinRoom}>Giriş Yap</Button>
-            </Form>
-          </Col>
-        </Row>
+        <JoinRoom
+          joinRoom={joinRoom}
+          username={username}
+          setUsername={setUsername}
+          room={room}
+          setRoom={setRoom}
+          error={error}
+        />
       ) : (
-        <Row>
-          <Col md={6} className="mx-auto">
-            <div className="text-center mb-4">
-              <h2>Oda: {room}</h2>
-              <h3>Mevcut Kullanıcılar:</h3>
-              <ListGroup>
-                {usersInRoom.map((user, index) => (
-                  <ListGroup.Item key={index}>{user}</ListGroup.Item>
-                ))}
-              </ListGroup>
-            </div>
-            <div className="mb-4">
-              <ListGroup>
-                {messages.map((mesajlar)=> console.log(mesajlar))}
-                {messages.map((msg, index) => (
-                  <ListGroup.Item key={index}>
-                    <strong>{msg.username}:</strong> {msg.message}
-                  </ListGroup.Item>
-                ))}
-              </ListGroup>
-            </div>
-            <Form>
-              <Form.Group controlId="formMessage">
-                <Form.Control
-                  type="text"
-                  placeholder="Mesajınızı yazın"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                />
-              </Form.Group>
-              <Button variant="primary" className="mt-3" onClick={sendMessage}>Gönder</Button>
-            </Form>
-          </Col>
-        </Row>
+        <ChatRoom
+          messages={messages}
+          username={username}
+          usersInRoom={usersInRoom}
+          room={room}
+          message={message}
+          setMessage={setMessage}
+          sendMessage={sendMessage}
+          leaveRoom={leaveRoom}
+        />
       )}
-    </Container>
+    </div>
   );
 }
 
