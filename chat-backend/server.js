@@ -38,6 +38,11 @@ wss.on('connection', (ws) => {
         if (!roomUsers[room]) {
           roomUsers[room] = new Set();
         }
+        if (roomUsers[room].has(username)){
+          ws.send(JSON.stringify({type: 'error', message: 'Aynı kullanıcı mevcut odadad!!'}));
+          ws.close();
+          return;
+        }else {
         roomUsers[room].add(username);
         ws.room = room;
         ws.username = username;
@@ -80,6 +85,7 @@ wss.on('connection', (ws) => {
             client.send(JSON.stringify({ type: 'message', username, message: text }));
           }
         });
+       }
       } else if (type === 'message') {
         // Odaya gönderilen mesajı diğer kullanıcılara iletme
         wss.clients.forEach((client) => {
