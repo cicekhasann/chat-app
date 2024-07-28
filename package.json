@@ -2,11 +2,12 @@
     "name": "chat-app",
     "version": "1.0.0",
     "scripts": {
-        "setup": "cd chat-backend && npm run setup && cd ../chat-frontend && npm install",
+        "first-setup": "npm install && npm run setup",
+        "setup": "cd chat-backend && npm install && npm run setup-db && cd ../chat-frontend && npm install",
+        "setup-db": "node setup_db.js",
+        "start-all": "npm run start-backend & npm run start-frontend",
         "start-backend": "cd chat-backend && npm start",
-        "start-frontend": "cd chat-frontend && npm start",
-        "start-all":  "concurrently \"npm run start-backend\" \"npm run start-frontend\"",
-        "first-setup": "npm install && npm run setup && npm run start-all"
+        "start-frontend": "cd chat-frontend && npm start"
     },
     "devDependencies": {
         "concurrently": "^8.2.2"
