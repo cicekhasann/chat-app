@@ -34,6 +34,9 @@ function App() {
           setUsersInRoom(msg.users || []);
         } else if (msg.type === 'message' && msg.username && msg.message) {
           setMessages((prevMessages) => [...prevMessages, msg]);
+        } else if (msg.type === 'error') {
+          setError(msg.message);
+          setIsLoggedIn(false);
         } else {
           console.warn('Beklenmeyen mesaj türü:', msg);
         }
